@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>🎬 نشر مسلسل - متعدد الحلقات دفعة واحدة</title>
+  <title>🎬 نشر مسلسل - مع تأخير ذكي</title>
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
   <style>
     :root {
@@ -25,7 +25,7 @@
       min-height: 100vh;
       padding: 20px;
     }
-    .container { width: 100%; max-width: 800px; margin: 0 auto; }
+    .container { width: 100%; max-width: 900px; margin: 0 auto; }
     .header { text-align: center; margin-bottom: 30px; }
     .header .logo { font-size: 42px; }
     .header h1 { font-size: 22px; font-weight: 900; }
@@ -38,12 +38,12 @@
     .field { margin-bottom: 18px; }
     label { display: block; font-size: 13px; font-weight: 600; color: #aaa; margin-bottom: 8px; }
     label span { color: var(--accent); }
-    input, select {
+    input {
       width: 100%; background: var(--input-bg); border: 1px solid var(--border);
       border-radius: 10px; padding: 12px 14px; color: var(--text);
       font-family: 'Cairo', sans-serif; font-size: 14px; outline: none;
     }
-    input:focus, select:focus { border-color: var(--accent); }
+    input:focus { border-color: var(--accent); }
     .preview {
       display: none; margin-bottom: 18px; border-radius: 10px;
       overflow: hidden; border: 1px solid var(--border);
@@ -65,9 +65,6 @@
       border: none; border-radius: 8px; color: #fff;
       font-family: 'Cairo', sans-serif; font-size: 13px; font-weight: 600;
       cursor: pointer;
-    }
-    .btn-success {
-      background: linear-gradient(135deg, #22c55e, #16a34a);
     }
     .login-btn {
       width: 100%; padding: 12px; background: transparent;
@@ -111,7 +108,6 @@
       color: #3b82f6;
       text-decoration: none;
     }
-    .link-cell a:hover { text-decoration: underline; }
     .status-badge {
       display: inline-block;
       padding: 4px 10px;
@@ -121,17 +117,20 @@
     }
     .status-published { background: rgba(34,197,94,0.2); color: #22c55e; }
     .status-converted { background: rgba(251,191,36,0.2); color: #fbbf24; }
+    .status-failed { background: rgba(229,9,20,0.2); color: #f87171; }
     .error {
       display: none; margin-top: 16px; padding: 14px;
       background: rgba(229,9,20,0.08); border: 1px solid rgba(229,9,20,0.2);
       border-radius: 10px; font-size: 13px; color: #f87171;
     }
-    .progress-bar {
+    .progress-container {
       display: none;
-      height: 4px;
+      margin-top: 20px;
+    }
+    .progress-bar {
+      height: 8px;
       background: var(--border);
-      border-radius: 2px;
-      margin-top: 15px;
+      border-radius: 4px;
       overflow: hidden;
     }
     .progress-fill {
@@ -140,6 +139,12 @@
       background: linear-gradient(90deg, var(--accent), var(--accent2));
       transition: width 0.3s;
     }
+    .progress-text {
+      text-align: center;
+      margin-top: 10px;
+      font-size: 13px;
+      color: var(--muted);
+    }
     .note { font-size: 11px; color: var(--muted); margin-top: 5px; }
     .summary {
       background: rgba(59,130,246,0.1);
@@ -147,14 +152,22 @@
       padding: 15px;
       margin-top: 15px;
     }
+    .delay-info {
+      background: rgba(251,191,36,0.1);
+      border: 1px solid rgba(251,191,36,0.2);
+      border-radius: 10px;
+      padding: 12px;
+      margin-bottom: 20px;
+      font-size: 13px;
+    }
   </style>
 </head>
 <body>
 <div class="container">
   <div class="header">
     <div class="logo">📺</div>
-    <h1>نشر مسلسل - دفعة واحدة</h1>
-    <p>رابط فيديو واحد يتضاعف لكل الحلقات | تحويل فردي لكل حلقة</p>
+    <h1>نشر مسلسل - دفعة واحدة (مع تأخير)</h1>
+    <p>تجنب مشكلة quota | نشر آمن لكل الحلقات</p>
   </div>
 
   <div class="card">
@@ -167,6 +180,11 @@
       </svg>
       تسجيل الدخول بـ Google
     </button>
+
+    <div class="delay-info">
+      ⏱️ <strong>معلومة مهمة:</strong> لتجنب خطأ "Resource exhausted"، الكود هيضيف <strong>تأخير 3 ثواني</strong> بين كل حلقة والأخرى.<br>
+      لو عندك 20 حلقة، العملية هتاخد حوالي دقيقة كاملة عشان تضمن نجاح كل الحلقات.
+    </div>
 
     <div class="preview" id="posterPreview">
       <img id="posterImg" src="" alt="بوستر المسلسل">
@@ -199,10 +217,25 @@
       <div class="note">هيتضاعف تلقائياً لكل الحلقات (هيضيف ?ep=1, ?ep=2, ...)</div>
     </div>
 
+    <div class="row">
+      <div class="field">
+        <label>⏱️ التأخير بين الحلقات (ثانية)</label>
+        <input type="number" id="delaySec" placeholder="3" min="1" max="10" value="3">
+        <div class="note">زود الرقم لو بتحصل على quota error (مثلاً 5 ثواني)</div>
+      </div>
+      <div class="field">
+        <label>🔄 إعادة المحاولة عند الخطأ</label>
+        <input type="number" id="retryCount" placeholder="2" min="0" max="5" value="2">
+      </div>
+    </div>
+
     <button id="publishBtn" class="btn-primary" onclick="publishAllEpisodes()" disabled>🚀 نشر كل الحلقات دفعة واحدة</button>
 
-    <div class="progress-bar" id="progressBar">
-      <div class="progress-fill" id="progressFill"></div>
+    <div class="progress-container" id="progressContainer">
+      <div class="progress-bar">
+        <div class="progress-fill" id="progressFill"></div>
+      </div>
+      <div class="progress-text" id="progressText">0 / 0</div>
     </div>
 
     <div class="error" id="errorBox"></div>
@@ -240,7 +273,7 @@
   var accessToken = null;
   var tokenClient = null;
   
-  var publishedEpisodes = []; // تخزين بيانات الحلقات المنشورة
+  var publishedEpisodes = [];
 
   document.getElementById('posterUrl').addEventListener('input', function() {
     var url = this.value.trim();
@@ -267,12 +300,42 @@
 
   function doLogin() { tokenClient.requestAccessToken(); }
 
+  function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
+  async function publishWithRetry(url, options, retries, delay) {
+    for (let i = 0; i <= retries; i++) {
+      try {
+        let response = await fetch(url, options);
+        let data = await response.json();
+        if (data.error && (data.error.code === 403 || data.error.message?.includes('quota'))) {
+          if (i < retries) {
+            console.log(`Quota error, retrying in ${delay * 1000}ms... (attempt ${i + 1}/${retries})`);
+            await sleep(delay * 1000);
+            continue;
+          }
+        }
+        return data;
+      } catch (err) {
+        if (i < retries) {
+          console.log(`Error, retrying in ${delay * 1000}ms... (attempt ${i + 1}/${retries})`);
+          await sleep(delay * 1000);
+          continue;
+        }
+        throw err;
+      }
+    }
+  }
+
   async function publishAllEpisodes() {
     var seriesName = document.getElementById('seriesName').value.trim();
     var poster = document.getElementById('posterUrl').value.trim();
     var episodesCount = parseInt(document.getElementById('episodesCount').value);
     var startFrom = parseInt(document.getElementById('startFrom').value) || 1;
     var baseStreamUrl = document.getElementById('baseStreamUrl').value.trim();
+    var delaySec = parseInt(document.getElementById('delaySec').value) || 3;
+    var retryCount = parseInt(document.getElementById('retryCount').value) || 2;
     
     hideError();
     if (!seriesName) { showError("⚠️ اكتب اسم المسلسل"); return; }
@@ -285,31 +348,39 @@
     btn.disabled = true;
     btn.textContent = '⏳ جاري النشر...';
     
-    var progressBar = document.getElementById('progressBar');
+    var progressContainer = document.getElementById('progressContainer');
     var progressFill = document.getElementById('progressFill');
-    progressBar.style.display = 'block';
+    var progressText = document.getElementById('progressText');
+    progressContainer.style.display = 'block';
     
     publishedEpisodes = [];
     var successCount = 0;
     var failCount = 0;
+    var total = episodesCount;
 
-    for (var ep = startFrom; ep < startFrom + episodesCount; ep++) {
-      var episodeNum = ep;
+    for (var i = 0; i < total; i++) {
+      var episodeNum = startFrom + i;
       var streamUrl = baseStreamUrl + (baseStreamUrl.includes('?') ? '&ep=' : '?ep=') + episodeNum;
       var fullTitle = `${seriesName} - الحلقة ${episodeNum}`;
       var browserTitle = `🔹${fullTitle}🔹`;
       
-      progressFill.style.width = ((ep - startFrom + 1) / episodesCount * 100) + '%';
+      var percent = ((i + 1) / total * 100).toFixed(1);
+      progressFill.style.width = percent + '%';
+      progressText.textContent = `نشر الحلقة ${episodeNum} من ${startFrom + total - 1} (${percent}%)`;
       
       var content = generateMovieContent(browserTitle, poster, streamUrl, fullTitle);
       
       try {
-        var response = await fetch("https://www.googleapis.com/blogger/v3/blogs/" + BLOG_ID + "/posts/", {
-          method: "POST",
-          headers: { "Authorization": "Bearer " + accessToken, "Content-Type": "application/json" },
-          body: JSON.stringify({ title: browserTitle, content: content })
-        });
-        var data = await response.json();
+        var data = await publishWithRetry(
+          "https://www.googleapis.com/blogger/v3/blogs/" + BLOG_ID + "/posts/",
+          {
+            method: "POST",
+            headers: { "Authorization": "Bearer " + accessToken, "Content-Type": "application/json" },
+            body: JSON.stringify({ title: browserTitle, content: content })
+          },
+          retryCount,
+          delaySec
+        );
         
         if (data.url) {
           publishedEpisodes.push({
@@ -321,6 +392,7 @@
             redirectUrl: ""
           });
           successCount++;
+          progressText.textContent = `✅ تم نشر الحلقة ${episodeNum} - باقي ${total - i - 1} حلقات`;
         } else {
           publishedEpisodes.push({
             num: episodeNum,
@@ -330,6 +402,7 @@
             error: data.error?.message || "فشل النشر"
           });
           failCount++;
+          progressText.textContent = `❌ فشلت الحلقة ${episodeNum}`;
         }
       } catch(err) {
         publishedEpisodes.push({
@@ -340,18 +413,24 @@
           error: err.message
         });
         failCount++;
+        progressText.textContent = `❌ خطأ في الحلقة ${episodeNum}: ${err.message.substring(0, 50)}`;
       }
       
-      // تأخير بسيط عشان ما نضغط الـ API
-      await sleep(500);
+      // تأخير بين الحلقات (ما عدا آخر حلقة)
+      if (i < total - 1) {
+        await sleep(delaySec * 1000);
+      }
     }
     
-    progressBar.style.display = 'none';
+    progressContainer.style.display = 'none';
     btn.disabled = false;
     btn.textContent = '🚀 نشر كل الحلقات دفعة واحدة';
     
     showEpisodesTable();
-    showError(`✅ تم النشر: ${successCount} حلقة ناجحة / ${failCount} فشل`);
+    showError(`✅ اكتمل النشر: ${successCount} حلقة ناجحة / ${failCount} فشل`);
+    if (failCount > 0) {
+      showError(`⚠️ فشل ${failCount} حلقة. حاول تنشرها تاني بشكل فردي من الجدول أدناه.`);
+    }
     setTimeout(() => hideError(), 5000);
   }
 
@@ -410,16 +489,13 @@
     publishedEpisodes.forEach(function(ep) {
       var row = tbody.insertRow();
       
-      // رقم الحلقة
       var cellNum = row.insertCell(0);
       cellNum.innerHTML = `<strong>${ep.num}</strong>`;
       
-      // العنوان
       var cellTitle = row.insertCell(1);
       cellTitle.innerHTML = ep.title;
       cellTitle.style.textAlign = 'right';
       
-      // الرابط
       var cellLink = row.insertCell(2);
       if (ep.url) {
         cellLink.innerHTML = `<a href="${ep.url}" target="_blank" class="link-cell">${ep.url.substring(0, 40)}...</a>`;
@@ -428,7 +504,6 @@
         cellLink.innerHTML = `<span style="color:#f87171;">${ep.error || 'فشل'}</span>`;
       }
       
-      // رابط التحويل الجديد + زر
       var cellConvert = row.insertCell(3);
       var inputId = `redirect_${ep.num}`;
       cellConvert.innerHTML = `
@@ -438,7 +513,6 @@
         </div>
       `;
       
-      // الحالة
       var cellStatus = row.insertCell(4);
       if (ep.converted) {
         cellStatus.innerHTML = '<span class="status-badge status-converted">🔄 تم التحويل</span>';
@@ -446,7 +520,7 @@
       } else if (ep.url) {
         cellStatus.innerHTML = '<span class="status-badge status-published">✅ منشور</span>';
       } else {
-        cellStatus.innerHTML = '<span class="status-badge" style="background:rgba(229,9,20,0.2);color:#f87171;">❌ فشل</span>';
+        cellStatus.innerHTML = '<span class="status-badge status-failed">❌ فشل</span>';
       }
     });
     
@@ -495,7 +569,7 @@
       if (result.url) {
         episode.converted = true;
         episode.redirectUrl = redirectUrl;
-        showEpisodesTable(); // تحديث الجدول
+        showEpisodesTable();
         showError(`✅ تم تحويل الحلقة ${episodeNum} إلى ${redirectUrl}`);
         setTimeout(() => hideError(), 3000);
       } else {
@@ -532,18 +606,6 @@
 </div>
 </body>
 </html>`;
-  }
-
-  function sleep(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
-  }
-
-  function copyLink(inputId) {
-    var input = document.getElementById(inputId);
-    if (input) {
-      input.select();
-      document.execCommand('copy');
-    }
   }
 
   function showError(msg) {

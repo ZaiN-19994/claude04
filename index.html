@@ -440,14 +440,14 @@
         consecutiveSuccess++;
         progressText.textContent = `✅ تم نشر الحلقة ${episodeNum} (${successCount}/${total - failCount})`;
         
-        // بعد كل 5 حلقات ناجحة، ننتظر 15 ثانية
-        if (consecutiveSuccess === 5 && i < total - 1) {
-          progressText.textContent = `⏳ تم نشر 5 حلقات، ننتظر 15 ثانية قبل المتابعة...`;
-          showError("⏳ تم نشر 5 حلقات، ننتظر 15 ثانية عشان quota...");
-          await sleep(15000);
-          hideError();
-          consecutiveSuccess = 0;
-        }
+       // بعد كل 5 حلقات ناجحة، ننتظر 46 ثانية
+if (consecutiveSuccess === 5 && i < total - 1) {
+  progressText.textContent = `⏳ تم نشر 5 حلقات، ننتظر 46 ثانية قبل المتابعة...`;
+  showError("⏳ تم نشر 5 حلقات، ننتظر 46 ثانية عشان quota...");
+  await sleep(46000);  // <--- 46 ثانية = 46000 ميلي ثانية
+  hideError();
+  consecutiveSuccess = 0;
+}
       } else {
         if (result.error === "QUOTA") {
           progressText.textContent = `⚠️ مشكلة في سيرفر جوجل (quota)، ننتظر 20 ثانية ثم نكمل...`;

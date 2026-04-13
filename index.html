@@ -123,7 +123,6 @@
     .status-published { background: rgba(34,197,94,0.2); color: #22c55e; }
     .status-converted { background: rgba(251,191,36,0.2); color: #fbbf24; }
     .status-failed { background: rgba(229,9,20,0.2); color: #f87171; }
-    .status-waiting { background: rgba(107,114,128,0.2); color: #9ca3af; }
     .error {
       display: none; margin-top: 16px; padding: 14px;
       background: rgba(229,9,20,0.08); border: 1px solid rgba(229,9,20,0.2);
@@ -158,15 +157,6 @@
       padding: 15px;
       margin-top: 15px;
     }
-    .waiting-message {
-      background: rgba(251,191,36,0.1);
-      border: 1px solid rgba(251,191,36,0.2);
-      border-radius: 10px;
-      padding: 12px;
-      margin: 15px 0;
-      font-size: 13px;
-      text-align: center;
-    }
   </style>
 </head>
 <body>
@@ -174,7 +164,7 @@
   <div class="header">
     <div class="logo">📺</div>
     <h1>نشر مسلسل - نظام ذكي</h1>
-    <p>يتأكد من quota | ينتظر 15 ثانية كل 5 حلقات</p>
+    <p>يتأكد من quota | ينتظر 46 ثانية كل 5 حلقات</p>
   </div>
 
   <div class="card">
@@ -248,7 +238,7 @@
           </thead>
           <tbody id="episodesTableBody">
           </tbody>
-        </table>
+         </table>
       </div>
       <div class="summary" id="summary"></div>
     </div>
@@ -355,7 +345,6 @@
           return { success: true, url: data.url, postId: data.id };
         }
         
-        // Check for quota error
         if (data.error && (data.error.code === 403 || data.error.message?.includes('quota') || data.error.message?.includes('exhausted'))) {
           if (attempt < retryCount) {
             return { success: false, error: "QUOTA", needWait: true };
@@ -440,21 +429,20 @@
         consecutiveSuccess++;
         progressText.textContent = `✅ تم نشر الحلقة ${episodeNum} (${successCount}/${total - failCount})`;
         
-       // بعد كل 5 حلقات ناجحة، ننتظر 46 ثانية
-if (consecutiveSuccess === 5 && i < total - 1) {
-  progressText.textContent = `⏳ تم نشر 5 حلقات، ننتظر 46 ثانية قبل المتابعة...`;
-  showError("⏳ تم نشر 5 حلقات، ننتظر 46 ثانية عشان quota...");
-  await sleep(46000);  // <--- 46 ثانية = 46000 ميلي ثانية
-  hideError();
-  consecutiveSuccess = 0;
-}
+        // بعد كل 5 حلقات ناجحة، ننتظر 46 ثانية
+        if (consecutiveSuccess === 5 && i < total - 1) {
+          progressText.textContent = `⏳ تم نشر 5 حلقات، ننتظر 46 ثانية قبل المتابعة...`;
+          showError("⏳ تم نشر 5 حلقات، ننتظر 46 ثانية عشان quota...");
+          await sleep(46000);
+          hideError();
+          consecutiveSuccess = 0;
+        }
       } else {
         if (result.error === "QUOTA") {
           progressText.textContent = `⚠️ مشكلة في سيرفر جوجل (quota)، ننتظر 20 ثانية ثم نكمل...`;
           showError("⚠️ جوجل طلب انتظار مؤقت، ننتظر 20 ثانية...");
           await sleep(20000);
           hideError();
-          // نعيد المحاولة للحلقة نفسها
           i--;
           continue;
         }
@@ -474,8 +462,7 @@ if (consecutiveSuccess === 5 && i < total - 1) {
         progressText.textContent = `❌ فشلت الحلقة ${episodeNum}: ${result.error.substring(0, 50)}`;
       }
       
-      // تأخير بسيط بين الحلقات (ثانيتين)
-      if (i < total - 1 && !result.error === "QUOTA") {
+      if (i < total - 1 && result.error !== "QUOTA") {
         await sleep(2000);
       }
     }

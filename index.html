@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>🎬 نشر مسلسل - حلقات متعددة</title>
+  <title>🎬 نشر مسلسل - متعدد الحلقات دفعة واحدة</title>
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
   <style>
     :root {
@@ -12,6 +12,7 @@
       --border: #1e1e2e;
       --accent: #e50914;
       --accent2: #ff6b35;
+      --accent3: #3b82f6;
       --text: #f0f0f0;
       --muted: #666;
       --input-bg: #0d0d14;
@@ -22,12 +23,9 @@
       background: var(--bg);
       color: var(--text);
       min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
       padding: 20px;
     }
-    .container { width: 100%; max-width: 580px; }
+    .container { width: 100%; max-width: 800px; margin: 0 auto; }
     .header { text-align: center; margin-bottom: 30px; }
     .header .logo { font-size: 42px; }
     .header h1 { font-size: 22px; font-weight: 900; }
@@ -35,17 +33,17 @@
     .card {
       background: var(--card); border: 1px solid var(--border);
       border-radius: 16px; padding: 28px;
+      margin-bottom: 20px;
     }
     .field { margin-bottom: 18px; }
     label { display: block; font-size: 13px; font-weight: 600; color: #aaa; margin-bottom: 8px; }
     label span { color: var(--accent); }
-    input {
+    input, select {
       width: 100%; background: var(--input-bg); border: 1px solid var(--border);
       border-radius: 10px; padding: 12px 14px; color: var(--text);
       font-family: 'Cairo', sans-serif; font-size: 14px; outline: none;
     }
-    input:focus { border-color: var(--accent); }
-    input::placeholder { color: #333; }
+    input:focus, select:focus { border-color: var(--accent); }
     .preview {
       display: none; margin-bottom: 18px; border-radius: 10px;
       overflow: hidden; border: 1px solid var(--border);
@@ -60,61 +58,106 @@
       font-family: 'Cairo', sans-serif; font-size: 16px; font-weight: 700;
       cursor: pointer; transition: all 0.2s;
     }
-    .btn-primary:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 8px 25px rgba(229,9,20,0.35); }
+    .btn-primary:hover:not(:disabled) { transform: translateY(-1px); }
     .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
     .btn-secondary {
-      width: 100%; padding: 12px; background: linear-gradient(135deg, #3b82f6, #1e3a8a);
-      border: none; border-radius: 10px; color: #fff;
-      font-family: 'Cairo', sans-serif; font-size: 14px; font-weight: 600;
-      cursor: pointer; transition: all 0.2s; margin-top: 12px;
+      padding: 8px 16px; background: linear-gradient(135deg, var(--accent3), #1e3a8a);
+      border: none; border-radius: 8px; color: #fff;
+      font-family: 'Cairo', sans-serif; font-size: 13px; font-weight: 600;
+      cursor: pointer;
     }
-    .result {
-      display: none; margin-top: 20px; padding: 16px;
-      background: rgba(34,197,94,0.08); border: 1px solid rgba(34,197,94,0.2);
-      border-radius: 10px;
-    }
-    .result p { font-size: 13px; color: #22c55e; margin-bottom: 10px; font-weight: 600; }
-    .result-link { display: flex; gap: 8px; margin-bottom: 12px; }
-    .result-link input { background: rgba(0,0,0,0.3); font-size: 12px; padding: 10px 12px; direction: ltr; }
-    .copy-btn {
-      padding: 10px 16px; background: #22c55e; border: none; border-radius: 8px;
-      color: #000; font-weight: 700; cursor: pointer;
-    }
-    .convert-section {
-      display: none; margin-top: 15px; padding-top: 15px;
-      border-top: 1px solid var(--border);
-    }
-    .convert-section label { font-size: 12px; color: #fbbf24; }
-    .error {
-      display: none; margin-top: 16px; padding: 14px 16px;
-      background: rgba(229,9,20,0.08); border: 1px solid rgba(229,9,20,0.2);
-      border-radius: 10px; font-size: 13px; color: #f87171;
+    .btn-success {
+      background: linear-gradient(135deg, #22c55e, #16a34a);
     }
     .login-btn {
       width: 100%; padding: 12px; background: transparent;
       border: 1px solid var(--border); border-radius: 10px; color: #aaa;
       font-family: 'Cairo', sans-serif; font-size: 14px; font-weight: 600;
-      cursor: pointer; transition: all 0.2s; margin-bottom: 20px;
+      cursor: pointer; margin-bottom: 20px;
       display: flex; align-items: center; justify-content: center; gap: 8px;
     }
-    .login-btn.logged { border-color: #22c55e; color: #22c55e; cursor: default; }
-    .info-box {
-      background: rgba(59,130,246,0.1); border: 1px solid rgba(59,130,246,0.2);
-      border-radius: 10px; padding: 12px; margin-bottom: 20px;
+    .login-btn.logged { border-color: #22c55e; color: #22c55e; }
+    .episodes-table {
+      margin-top: 20px;
+      overflow-x: auto;
+    }
+    .episodes-table table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    .episodes-table th, .episodes-table td {
+      padding: 12px 8px;
+      text-align: center;
+      border-bottom: 1px solid var(--border);
       font-size: 13px;
     }
-    .info-box span { color: #3b82f6; font-weight: bold; }
+    .episodes-table th {
+      background: var(--input-bg);
+      color: var(--accent);
+      font-weight: 700;
+    }
+    .episodes-table td input {
+      padding: 8px 10px;
+      font-size: 11px;
+      direction: ltr;
+    }
+    .link-cell {
+      direction: ltr;
+      font-size: 11px;
+      word-break: break-all;
+      max-width: 250px;
+    }
+    .link-cell a {
+      color: #3b82f6;
+      text-decoration: none;
+    }
+    .link-cell a:hover { text-decoration: underline; }
+    .status-badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+    .status-published { background: rgba(34,197,94,0.2); color: #22c55e; }
+    .status-converted { background: rgba(251,191,36,0.2); color: #fbbf24; }
+    .error {
+      display: none; margin-top: 16px; padding: 14px;
+      background: rgba(229,9,20,0.08); border: 1px solid rgba(229,9,20,0.2);
+      border-radius: 10px; font-size: 13px; color: #f87171;
+    }
+    .progress-bar {
+      display: none;
+      height: 4px;
+      background: var(--border);
+      border-radius: 2px;
+      margin-top: 15px;
+      overflow: hidden;
+    }
+    .progress-fill {
+      width: 0%;
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      transition: width 0.3s;
+    }
+    .note { font-size: 11px; color: var(--muted); margin-top: 5px; }
+    .summary {
+      background: rgba(59,130,246,0.1);
+      border-radius: 10px;
+      padding: 15px;
+      margin-top: 15px;
+    }
   </style>
 </head>
 <body>
 <div class="container">
   <div class="header">
     <div class="logo">📺</div>
-    <h1>نشر مسلسل - حلقات متعددة</h1>
-    <p>بوستر واحد للمسلسل كله | كل حلقة بتنشر لوحدها</p>
+    <h1>نشر مسلسل - دفعة واحدة</h1>
+    <p>رابط فيديو واحد يتضاعف لكل الحلقات | تحويل فردي لكل حلقة</p>
   </div>
-  <div class="card">
 
+  <div class="card">
     <button id="loginBtn" class="login-btn" onclick="doLogin()">
       <svg width="18" height="18" viewBox="0 0 24 24">
         <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
@@ -124,10 +167,6 @@
       </svg>
       تسجيل الدخول بـ Google
     </button>
-
-    <div class="info-box">
-      📌 <span>بوستر واحد للمسلسل كله</span> — اكتبه مرة واحدة والباقي هيتكرر تلقائياً
-    </div>
 
     <div class="preview" id="posterPreview">
       <img id="posterImg" src="" alt="بوستر المسلسل">
@@ -139,56 +178,69 @@
     </div>
 
     <div class="field">
-      <label>🖼️ رابط البوستر (ثابت للمسلسل كله) <span>*</span></label>
+      <label>🖼️ رابط البوستر (ثابت لكل الحلقات) <span>*</span></label>
       <input type="url" id="posterUrl" placeholder="https://...jpg">
     </div>
 
     <div class="row">
       <div class="field">
-        <label>🔢 رقم الحلقة <span>*</span></label>
-        <input type="number" id="episodeNum" placeholder="مثال: 1" min="1">
+        <label>🔢 عدد الحلقات <span>*</span></label>
+        <input type="number" id="episodesCount" placeholder="مثال: 20" min="1" max="100">
       </div>
       <div class="field">
-        <label>📌 (اختياري) عنوان الحلقة</label>
-        <input type="text" id="episodeTitle" placeholder="مثال: البداية">
+        <label>🔢 ابدأ من حلقة رقم</label>
+        <input type="number" id="startFrom" placeholder="1" min="1" value="1">
       </div>
     </div>
 
     <div class="field">
-      <label>▶️ رابط الفيديو (m3u8) <span>*</span></label>
-      <input type="url" id="streamUrl" placeholder="https://...master.m3u8">
+      <label>▶️ رابط الفيديو الأساسي <span>*</span></label>
+      <input type="url" id="baseStreamUrl" placeholder="https://...master.m3u8">
+      <div class="note">هيتضاعف تلقائياً لكل الحلقات (هيضيف ?ep=1, ?ep=2, ...)</div>
     </div>
 
-    <button id="publishBtn" class="btn-primary" onclick="publishEpisode()" disabled>🚀 نشر الحلقة</button>
+    <button id="publishBtn" class="btn-primary" onclick="publishAllEpisodes()" disabled>🚀 نشر كل الحلقات دفعة واحدة</button>
 
-    <div class="result" id="result">
-      <p>✅ تم نشر الحلقة بنجاح!</p>
-      <div class="result-link">
-        <input type="text" id="resultUrl" readonly>
-        <button class="copy-btn" onclick="copyLink()">نسخ</button>
-      </div>
-      <div class="convert-section" id="convertSection">
-        <label>🔄 رابط التحويل الجديد (لو الفيديو بوظ)</label>
-        <input type="url" id="redirectUrl" placeholder="https://vipserver.liiivideo.com/embed-xxxxx.html">
-        <div class="note">هيحول الحلقة لـ meta refresh للرابط ده</div>
-        <button class="btn-secondary" onclick="convertEpisode()">✏️ تحويل الحلقة</button>
-      </div>
+    <div class="progress-bar" id="progressBar">
+      <div class="progress-fill" id="progressFill"></div>
     </div>
 
     <div class="error" id="errorBox"></div>
+  </div>
+
+  <!-- جدول الحلقات -->
+  <div id="episodesTableContainer" style="display: none;">
+    <div class="card">
+      <h3 style="margin-bottom: 15px;">📋 قائمة الحلقات المنشورة</h3>
+      <div class="episodes-table">
+        <table id="episodesTable">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>العنوان</th>
+              <th>الرابط</th>
+              <th>رابط التحويل الجديد</th>
+              <th>الحالة</th>
+            </tr>
+          </thead>
+          <tbody id="episodesTableBody">
+          </tbody>
+        </table>
+      </div>
+      <div class="summary" id="summary"></div>
+    </div>
   </div>
 </div>
 
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <script>
-  var CLIENT_ID  = "632431284451-clec614utbj96612gt5a61h8c8seto8c.apps.googleusercontent.com";
+  var CLIENT_ID  = "632431284451-jfbq5f5ts90lkio34nt5p35f6plnn755.apps.googleusercontent.com";
   var BLOG_ID    = "5055056580470574725";
   var SCOPES     = "https://www.googleapis.com/auth/blogger";
   var accessToken = null;
   var tokenClient = null;
-  var lastPublishedPostId = null;
-  var lastPublishedSeries = null;
-  var lastEpisodeNum = null;
+  
+  var publishedEpisodes = []; // تخزين بيانات الحلقات المنشورة
 
   document.getElementById('posterUrl').addEventListener('input', function() {
     var url = this.value.trim();
@@ -215,32 +267,96 @@
 
   function doLogin() { tokenClient.requestAccessToken(); }
 
-  function publishEpisode() {
+  async function publishAllEpisodes() {
     var seriesName = document.getElementById('seriesName').value.trim();
-    var episodeNum = document.getElementById('episodeNum').value.trim();
-    var episodeTitle = document.getElementById('episodeTitle').value.trim();
     var poster = document.getElementById('posterUrl').value.trim();
-    var stream = document.getElementById('streamUrl').value.trim();
+    var episodesCount = parseInt(document.getElementById('episodesCount').value);
+    var startFrom = parseInt(document.getElementById('startFrom').value) || 1;
+    var baseStreamUrl = document.getElementById('baseStreamUrl').value.trim();
     
     hideError();
     if (!seriesName) { showError("⚠️ اكتب اسم المسلسل"); return; }
-    if (!episodeNum) { showError("⚠️ اكتب رقم الحلقة"); return; }
     if (!poster) { showError("⚠️ حط رابط البوستر"); return; }
-    if (!stream) { showError("⚠️ حط رابط الفيديو"); return; }
+    if (!episodesCount || episodesCount < 1) { showError("⚠️ اكتب عدد الحلقات"); return; }
+    if (!baseStreamUrl) { showError("⚠️ حط رابط الفيديو الأساسي"); return; }
     if (!accessToken) { showError("⚠️ سجّل الدخول الأول"); return; }
-
-    // تكوين عنوان الحلقة
-    var episodeLabel = episodeTitle ? ` - ${episodeTitle}` : "";
-    var fullTitle = `${seriesName} - الحلقة ${episodeNum}${episodeLabel}`;
-    
-    // عنوان المتصفح والمنشور
-    var browserTitle = `🔹${fullTitle}🔹`;
 
     var btn = document.getElementById('publishBtn');
     btn.disabled = true;
-    btn.textContent = '⏳ جاري نشر الحلقة...';
+    btn.textContent = '⏳ جاري النشر...';
+    
+    var progressBar = document.getElementById('progressBar');
+    var progressFill = document.getElementById('progressFill');
+    progressBar.style.display = 'block';
+    
+    publishedEpisodes = [];
+    var successCount = 0;
+    var failCount = 0;
 
-    var content = `<!DOCTYPE html>
+    for (var ep = startFrom; ep < startFrom + episodesCount; ep++) {
+      var episodeNum = ep;
+      var streamUrl = baseStreamUrl + (baseStreamUrl.includes('?') ? '&ep=' : '?ep=') + episodeNum;
+      var fullTitle = `${seriesName} - الحلقة ${episodeNum}`;
+      var browserTitle = `🔹${fullTitle}🔹`;
+      
+      progressFill.style.width = ((ep - startFrom + 1) / episodesCount * 100) + '%';
+      
+      var content = generateMovieContent(browserTitle, poster, streamUrl, fullTitle);
+      
+      try {
+        var response = await fetch("https://www.googleapis.com/blogger/v3/blogs/" + BLOG_ID + "/posts/", {
+          method: "POST",
+          headers: { "Authorization": "Bearer " + accessToken, "Content-Type": "application/json" },
+          body: JSON.stringify({ title: browserTitle, content: content })
+        });
+        var data = await response.json();
+        
+        if (data.url) {
+          publishedEpisodes.push({
+            num: episodeNum,
+            title: fullTitle,
+            url: data.url,
+            postId: data.id,
+            converted: false,
+            redirectUrl: ""
+          });
+          successCount++;
+        } else {
+          publishedEpisodes.push({
+            num: episodeNum,
+            title: fullTitle,
+            url: null,
+            postId: null,
+            error: data.error?.message || "فشل النشر"
+          });
+          failCount++;
+        }
+      } catch(err) {
+        publishedEpisodes.push({
+          num: episodeNum,
+          title: fullTitle,
+          url: null,
+          postId: null,
+          error: err.message
+        });
+        failCount++;
+      }
+      
+      // تأخير بسيط عشان ما نضغط الـ API
+      await sleep(500);
+    }
+    
+    progressBar.style.display = 'none';
+    btn.disabled = false;
+    btn.textContent = '🚀 نشر كل الحلقات دفعة واحدة';
+    
+    showEpisodesTable();
+    showError(`✅ تم النشر: ${successCount} حلقة ناجحة / ${failCount} فشل`);
+    setTimeout(() => hideError(), 5000);
+  }
+
+  function generateMovieContent(browserTitle, poster, streamUrl, playerTitle) {
+    return `<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
@@ -258,7 +374,7 @@
 <div id="player"></div>
 <script>
   jwplayer("player").setup({
-    sources: [{ file: "${stream.replace(/"/g, '\\"')}", label: "Auto" }],
+    sources: [{ file: "${streamUrl.replace(/"/g, '\\"')}", label: "Auto" }],
     image: "${poster.replace(/"/g, '\\"')}",
     title: "${browserTitle.replace(/"/g, '\\"')}",
     width: "100%",
@@ -281,67 +397,126 @@
 <\/script>
 </body>
 </html>`;
-
-    fetch("https://www.googleapis.com/blogger/v3/blogs/" + BLOG_ID + "/posts/", {
-      method: "POST",
-      headers: { "Authorization": "Bearer " + accessToken, "Content-Type": "application/json" },
-      body: JSON.stringify({ title: browserTitle, content: content })
-    })
-    .then(r => r.json())
-    .then(data => {
-      btn.disabled = false;
-      btn.textContent = '🚀 نشر الحلقة';
-      if (data.url) {
-        document.getElementById('resultUrl').value = data.url;
-        document.getElementById('result').style.display = 'block';
-        document.getElementById('convertSection').style.display = 'block';
-        lastPublishedPostId = data.id;
-        lastPublishedSeries = seriesName;
-        lastEpisodeNum = episodeNum;
-        showError("✅ تم نشر الحلقة بنجاح!");
-        setTimeout(() => hideError(), 3000);
-        
-        // تفريغ حقل رابط الفيديو ورقم الحلقة عشان الحلقة الجاية
-        document.getElementById('streamUrl').value = '';
-        document.getElementById('episodeNum').value = '';
-        document.getElementById('episodeTitle').value = '';
-        document.getElementById('episodeNum').focus();
-      } else {
-        showError("⚠️ " + (data.error ? data.error.message : "حصل خطأ"));
-      }
-    })
-    .catch(err => { btn.disabled = false; btn.textContent = '🚀 نشر الحلقة'; showError("⚠️ " + err.message); });
   }
 
-  async function convertEpisode() {
-    var postId = lastPublishedPostId;
-    var redirectTo = document.getElementById('redirectUrl').value.trim();
-    var seriesName = lastPublishedSeries;
-    var episodeNum = lastEpisodeNum;
-    var episodeTitle = document.getElementById('episodeTitle').value.trim();
+  function showEpisodesTable() {
+    var container = document.getElementById('episodesTableContainer');
+    var tbody = document.getElementById('episodesTableBody');
+    var summary = document.getElementById('summary');
     
-    hideError();
-    if (!postId) { showError("⚠️ مفيش حلقة تم نشرها حديثاً"); return; }
-    if (!redirectTo) { showError("⚠️ حط رابط التحويل الجديد"); return; }
-    if (!accessToken) { showError("⚠️ سجّل الدخول الأول"); return; }
+    tbody.innerHTML = '';
+    var convertedCount = 0;
+    
+    publishedEpisodes.forEach(function(ep) {
+      var row = tbody.insertRow();
+      
+      // رقم الحلقة
+      var cellNum = row.insertCell(0);
+      cellNum.innerHTML = `<strong>${ep.num}</strong>`;
+      
+      // العنوان
+      var cellTitle = row.insertCell(1);
+      cellTitle.innerHTML = ep.title;
+      cellTitle.style.textAlign = 'right';
+      
+      // الرابط
+      var cellLink = row.insertCell(2);
+      if (ep.url) {
+        cellLink.innerHTML = `<a href="${ep.url}" target="_blank" class="link-cell">${ep.url.substring(0, 40)}...</a>`;
+        cellLink.className = 'link-cell';
+      } else {
+        cellLink.innerHTML = `<span style="color:#f87171;">${ep.error || 'فشل'}</span>`;
+      }
+      
+      // رابط التحويل الجديد + زر
+      var cellConvert = row.insertCell(3);
+      var inputId = `redirect_${ep.num}`;
+      cellConvert.innerHTML = `
+        <div style="display: flex; gap: 6px;">
+          <input type="url" id="${inputId}" placeholder="https://vipserver.../embed-xxx.html" style="flex:1; font-size:11px;">
+          <button class="btn-secondary" onclick="convertEpisode(${ep.num}, '${inputId}')" style="padding:6px 12px;">تحويل</button>
+        </div>
+      `;
+      
+      // الحالة
+      var cellStatus = row.insertCell(4);
+      if (ep.converted) {
+        cellStatus.innerHTML = '<span class="status-badge status-converted">🔄 تم التحويل</span>';
+        convertedCount++;
+      } else if (ep.url) {
+        cellStatus.innerHTML = '<span class="status-badge status-published">✅ منشور</span>';
+      } else {
+        cellStatus.innerHTML = '<span class="status-badge" style="background:rgba(229,9,20,0.2);color:#f87171;">❌ فشل</span>';
+      }
+    });
+    
+    summary.innerHTML = `
+      📊 <strong>الخلاصة:</strong> ${publishedEpisodes.length} حلقة | 
+      ✅ منشور: ${publishedEpisodes.filter(e => e.url).length} | 
+      🔄 تم التحويل: ${convertedCount}
+    `;
+    
+    container.style.display = 'block';
+  }
 
-    var btn = document.querySelector('.btn-secondary');
+  async function convertEpisode(episodeNum, inputId) {
+    var redirectUrl = document.getElementById(inputId).value.trim();
+    if (!redirectUrl) {
+      showError(`⚠️ ادخل رابط التحويل للحلقة ${episodeNum}`);
+      return;
+    }
+    if (!accessToken) {
+      showError("⚠️ سجّل الدخول الأول");
+      return;
+    }
+    
+    var episode = publishedEpisodes.find(function(e) { return e.num === episodeNum; });
+    if (!episode || !episode.postId) {
+      showError(`⚠️ الحلقة ${episodeNum} مش موجودة أو فشل نشرها`);
+      return;
+    }
+    
+    var btn = document.querySelector(`#redirect_${episodeNum}`).nextElementSibling;
     var originalText = btn.textContent;
     btn.disabled = true;
-    btn.textContent = '⏳ جاري التحويل...';
-
-    var episodeLabel = episodeTitle ? ` - ${episodeTitle}` : "";
-    var fullTitle = `${seriesName} - الحلقة ${episodeNum}${episodeLabel}`;
-    var browserTitle = `🔹${fullTitle}🔹`;
-
+    btn.textContent = '⏳...';
+    
     try {
-      var newContent = `<!DOCTYPE html>
+      var newContent = generateRedirectContent(episode.title, redirectUrl);
+      
+      let updateRes = await fetch(`https://www.googleapis.com/blogger/v3/blogs/${BLOG_ID}/posts/${episode.postId}`, {
+        method: "PUT",
+        headers: { "Authorization": "Bearer " + accessToken, "Content-Type": "application/json" },
+        body: JSON.stringify({ title: `🔹${episode.title}🔹`, content: newContent })
+      });
+      
+      let result = await updateRes.json();
+      
+      if (result.url) {
+        episode.converted = true;
+        episode.redirectUrl = redirectUrl;
+        showEpisodesTable(); // تحديث الجدول
+        showError(`✅ تم تحويل الحلقة ${episodeNum} إلى ${redirectUrl}`);
+        setTimeout(() => hideError(), 3000);
+      } else {
+        showError(`⚠️ فشل التحويل: ${result.error?.message || 'خطأ غير معروف'}`);
+      }
+    } catch(err) {
+      showError(`⚠️ ${err.message}`);
+    }
+    
+    btn.disabled = false;
+    btn.textContent = originalText;
+  }
+
+  function generateRedirectContent(title, redirectUrl) {
+    return `<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>${browserTitle.replace(/"/g, '\\"')}</title>
-  <meta http-equiv="refresh" content="4;url=${redirectTo.replace(/"/g, '\\"')}">
+  <title>🔹${title.replace(/"/g, '\\"')}🔹</title>
+  <meta http-equiv="refresh" content="4;url=${redirectUrl.replace(/"/g, '\\"')}">
   <style>
     body { background: #000; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; font-family: 'Cairo', sans-serif; color: white; }
     .loading { text-align: center; }
@@ -357,40 +532,18 @@
 </div>
 </body>
 </html>`;
-
-      let updateRes = await fetch(`https://www.googleapis.com/blogger/v3/blogs/${BLOG_ID}/posts/${postId}`, {
-        method: "PUT",
-        headers: { "Authorization": "Bearer " + accessToken, "Content-Type": "application/json" },
-        body: JSON.stringify({ title: browserTitle, content: newContent })
-      });
-      
-      let result = await updateRes.json();
-      btn.disabled = false;
-      btn.textContent = originalText;
-      
-      if (result.url) {
-        document.getElementById('resultUrl').value = result.url;
-        showError("✅ تم التحويل! الحلقة بقا تحول لـ " + redirectTo);
-        document.getElementById('redirectUrl').value = "";
-        document.getElementById('convertSection').style.display = 'none';
-        setTimeout(() => hideError(), 4000);
-      } else {
-        showError("⚠️ " + (result.error ? result.error.message : "فشل التحويل"));
-      }
-    } catch(err) {
-      btn.disabled = false;
-      btn.textContent = originalText;
-      showError("⚠️ " + err.message);
-    }
   }
 
-  function copyLink() {
-    var input = document.getElementById('resultUrl');
-    input.select();
-    document.execCommand('copy');
-    var btn = document.querySelector('.copy-btn');
-    btn.textContent = '✔ تم النسخ';
-    setTimeout(() => { btn.textContent = 'نسخ'; }, 2000);
+  function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
+  function copyLink(inputId) {
+    var input = document.getElementById(inputId);
+    if (input) {
+      input.select();
+      document.execCommand('copy');
+    }
   }
 
   function showError(msg) {
@@ -398,6 +551,7 @@
     el.textContent = msg;
     el.style.display = 'block';
   }
+  
   function hideError() {
     document.getElementById('errorBox').style.display = 'none';
   }
